@@ -1,0 +1,23 @@
+global fasterRCNN video frame;
+           
+           app.StartButton.Text = 'Pause';
+           
+           model = fasterRCNN.fasterRcnn;
+           
+           nFrames = video.NumberOfFrames;
+                
+           for i=30:nFrames
+               img = read(video, i);
+                      
+               GS = rgb2gray(img);  
+               frame = imresize(GS, [400 450]);
+               
+               [bbox, score, label] = detect(model, frame, 'Threshold', 0.88, 'ExecutionEnvironment', 'gpu'); 
+               [selectedBbox , selectedScore, selectedLabels] = selectStrongestBboxMulticlass(bbox, score , label, 'OverlapThreshold', 0);
+               annotations = string(selectedLabels) + ": " + string(selectedScore);
+               I = insertObjectAnnotation(frame, 'rectangle', selectedBbox, cellstr(annotations));
+                    
+               imshow(I, 'Parent', app.ProcessUI);
+                      
+               drawnow
+           end
